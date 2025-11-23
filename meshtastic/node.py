@@ -17,6 +17,7 @@ from meshtastic.util import (
     stripnl,
     message_to_json,
     generate_channel_hash,
+    format_preset_name,
     to_node_num,
 )
 
@@ -1027,12 +1028,18 @@ class Node:
             for c in self.channels:
                 if c.settings and hasattr(c.settings, "name") and hasattr(c.settings, "psk"):
                     hash_val = generate_channel_hash(c.settings.name, c.settings.psk)
-                else:
-                    hash_val = None
+                    # If name is empty string, use modem preset
+                    if c.settings.name == '':
+                        # Assuming c.settings.modem_preset exists and is the enum name
+                        modem_preset_enum = getattr(getattr(self.localConfig, "lora", None), "modem_preset", None)
+                        modem_preset_string = self.localConfig.lora.DESCRIPTOR.fields_by_name["modem_preset"].enum_type.values_by_number[modem_preset_enum].name
+                        name_val = format_preset_name(modem_preset_string)
+                    else:
+                        name_val = c.settings.name
                 result.append({
                     "index": c.index,
                     "role": channel_pb2.Channel.Role.Name(c.role),
-                    "name": c.settings.name if c.settings and hasattr(c.settings, "name") else "",
+                    "name": name_val,
                     "hash": hash_val,
                 })
         return result

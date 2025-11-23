@@ -392,6 +392,29 @@ def generate_channel_hash(name: Union[str, bytes], key: Union[str, bytes]) -> in
     result: int = h_name ^ h_key
     return result
 
+# Mapping of preset enum names to display names used by get_channels_with_hash(), format_preset_name()
+MODEM_PRESET_DISPLAY_NAMES = {
+    "SHORT_TURBO": ("ShortTurbo", "ShortT"),
+    "SHORT_SLOW": ("ShortSlow", "ShortS"),
+    "SHORT_FAST": ("ShortFast", "ShortF"),
+    "MEDIUM_SLOW": ("MediumSlow", "MedS"),
+    "MEDIUM_FAST": ("MediumFast", "MedF"),
+    "LONG_SLOW": ("LongSlow", "LongS"),
+    "LONG_FAST": ("LongFast", "LongF"),
+    "LONG_MODERATE": ("LongMod", "LongM"),
+}
+
+def format_preset_name(name=None):
+    # Normalize input: extract the preset part from full enum string
+    if isinstance(name, str):
+        parts = name.split('_')
+        for i in range(len(parts)):
+            key = '_'.join(parts[i:])
+            if key in MODEM_PRESET_DISPLAY_NAMES:
+                names = MODEM_PRESET_DISPLAY_NAMES[key]
+                return names[0]  # Return clean name like "LongFast"
+    return "Custom"  # If no match, return "Custom"
+
 def hexstr(barray: bytes) -> str:
     """Print a string of hex digits"""
     return ":".join(f"{x:02x}" for x in barray)
